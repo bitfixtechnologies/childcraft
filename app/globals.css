@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --font-atkinson: "Atkinson Hyperlegible Next", sans-serif;
+  --color-primary: #0A5C96;
+  --color-primary-hover: #074775;
+  --color-primary-menus: #0A5C96;
+  --color-accent: #0284C7;
+  --color-brand-bg: #F0F9FF;
+
+  --animate-blob: blob 12s infinite alternate ease-in-out;
+  --animate-shine: shine 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.15);
+    }
+    66% {
+      transform: translate(-30px, 30px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+
+  @keyframes shine {
+    0% {
+      left: -150%;
+    }
+    50% {
+      left: 150%;
+    }
+    100% {
+      left: 150%;
+    }
+  }
+}
+
+body {
+  font-family: var(--font-atkinson);
+}
