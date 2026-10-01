@@ -105,15 +105,8 @@ export default function CareerPage() {
                 const res = await fetch(`${API_BASE_URL}/api/positions`);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.length > 0) {
-                        // Filter out old default seeded positions from the database
-                        const filteredData = data.filter((pos: any) => 
-                            pos.title !== "Educational Content Developer" &&
-                            pos.title !== "Graphic Designer & Children's Book Illustrator" &&
-                            pos.title !== "Academic Coordinator & Teacher Trainer"
-                        );
-                        
-                        const mapped = filteredData.map((pos: any) => ({
+                    if (Array.isArray(data)) {
+                        const mapped = data.map((pos: any) => ({
                             id: pos._id,
                             title: pos.title,
                             department: pos.department,
@@ -123,18 +116,10 @@ export default function CareerPage() {
                             icon: getIcon(pos.department)
                         }));
                         
-                        // Combine static fallback positions (the new requested ones) with any custom database positions
-                        const finalPositions = [
-                            ...staticPositionsFallback.map((pos, idx) => ({
-                                ...pos,
-                                id: `static-${idx}`,
-                                icon: getIcon(pos.department)
-                            })),
-                            ...mapped
-                        ];
-                        
-                        setPositions(finalPositions);
-                        setSelectedPosition(finalPositions[0].title);
+                        setPositions(mapped);
+                        if (mapped.length > 0) {
+                            setSelectedPosition(mapped[0].title);
+                        }
                         return;
                     }
                 }
@@ -150,11 +135,13 @@ export default function CareerPage() {
         const loadFallback = () => {
             const mapped = staticPositionsFallback.map((pos, idx) => ({
                 ...pos,
-                id: idx,
+                id: `static-${idx}`,
                 icon: getIcon(pos.department)
             }));
             setPositions(mapped);
-            setSelectedPosition(mapped[0].title);
+            if (mapped.length > 0) {
+                setSelectedPosition(mapped[0].title);
+            }
         };
 
         fetchPositions();
