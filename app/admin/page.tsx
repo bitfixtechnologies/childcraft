@@ -139,6 +139,7 @@ export default function AdminDashboardPage() {
   }
   const [positions, setPositions] = useState<PositionItem[]>([]);
   const [showPositionForm, setShowPositionForm] = useState(false);
+  const [editingPosition, setEditingPosition] = useState<PositionItem | null>(null);
   const [posTitle, setPosTitle] = useState("");
   const [posDept, setPosDept] = useState("Editorial & Content Development");
   const [posType, setPosType] = useState("Full-Time / Hybrid");
@@ -984,6 +985,16 @@ export default function AdminDashboardPage() {
     setShowBookForm(false);
   };
 
+  const handleEditPosition = (pos: PositionItem) => {
+    setEditingPosition(pos);
+    setPosTitle(pos.title);
+    setPosDept(pos.department);
+    setPosType(pos.type);
+    setPosDescription(pos.description);
+    setPosRequirementsText(pos.requirements ? pos.requirements.join("\n") : "");
+    setShowPositionForm(true);
+  };
+
   const handlePositionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPosSaving(true);
@@ -996,8 +1007,13 @@ export default function AdminDashboardPage() {
       .filter((req) => req.length > 0);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/positions`, {
-        method: "POST",
+      const url = editingPosition
+        ? `${API_BASE_URL}/api/positions/${editingPosition._id}`
+        : `${API_BASE_URL}/api/positions`;
+      const method = editingPosition ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -1014,11 +1030,19 @@ export default function AdminDashboardPage() {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage({ type: "success", text: "Career position created successfully!" });
+        setMessage({
+          type: "success",
+          text: editingPosition
+            ? "Career position updated successfully!"
+            : "Career position created successfully!",
+        });
         resetPositionForm();
         await fetchPositions();
       } else {
-        setMessage({ type: "error", text: data.message || "Failed to create career position." });
+        setMessage({
+          type: "error",
+          text: data.message || `Failed to ${editingPosition ? "update" : "create"} career position.`,
+        });
       }
     } catch (err) {
       console.error(err);
@@ -1052,6 +1076,7 @@ export default function AdminDashboardPage() {
   };
 
   const resetPositionForm = () => {
+    setEditingPosition(null);
     setPosTitle("");
     setPosDept("Editorial & Content Development");
     setPosType("Full-Time / Hybrid");
@@ -2346,7 +2371,7 @@ export default function AdminDashboardPage() {
                   className="bg-white rounded-3xl p-6 border border-slate-150 shadow-xs space-y-6 max-w-4xl"
                 >
                   <h3 className="text-sm font-extrabold text-slate-800">
-                    Add New Career Position
+                    {editingPosition ? "Edit Career Position" : "Add New Career Position"}
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -2433,7 +2458,7 @@ export default function AdminDashboardPage() {
                       disabled={posSaving}
                       className="px-5 py-2.5 bg-primary hover:bg-primary-hover disabled:bg-slate-200 text-white font-bold text-xs rounded-xl shadow-xs transition-all"
                     >
-                      {posSaving ? "Saving..." : "Create Position"}
+                      {posSaving ? "Saving..." : editingPosition ? "Update Position" : "Create Position"}
                     </button>
                     <button
                       type="button"
@@ -2487,7 +2512,13 @@ export default function AdminDashboardPage() {
                                 </ul>
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold space-x-2">
+                              <button
+                                onClick={() => handleEditPosition(pos)}
+                                className="px-3 py-1.5 text-primary hover:bg-sky-50 rounded-lg border border-transparent hover:border-sky-100 transition-all font-bold"
+                              >
+                                Edit
+                              </button>
                               <button
                                 onClick={() => handleDeletePosition(pos._id)}
                                 className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-100 transition-all font-bold"
